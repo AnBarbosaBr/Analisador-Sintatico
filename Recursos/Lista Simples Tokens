@@ -1,0 +1,16 @@
+INTEIRO               
+PONTO_FLUTUANTE        
+STRING                
+BOOL                    
+IDENTIFICADOR           
+PALAVRA_RESERVADA       
+PONTO_VIRGULA           
+ABRE_PARENTESES         
+FECHA_PARENTESES        
+ABRE_CHAVES             
+FECHA_CHAVES            
+VIRGULA                 
+ATRIBUICAO              
+OPERADOR                
+OPERADOR_RELACIONAL
+INCREMENTO
