@@ -1,20 +1,21 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <stdlib.h>
-
+#include <string.h>
 
 
 typedef struct informacoes {
     char token[255]; // ajustar tamanho do char para corresponder ao maior token,
     char lexema[255];
     int linha;
-    int coluna; } informacoes;
+    int coluna; 
+    } informacoes;
 
 void analyse(char *arquivo);
 void analiseLexica(FILE *fb);
-//void analisaEspacos(char ch, struct informacoes *token, int *numeroDeTokens);
-void analisaNaoEspacos(char ch, struct informacoes *token, int *numeroDeTokens);
-
+void analisaEspacos(char ch, struct informacoes *token, int *numeroDeTokens);
+informacoes analisaNaoEspacos(char ch, struct informacoes *token, int *numeroDeTokens);
+void imprimeToken(informacoes token);
 
 
 
@@ -52,6 +53,7 @@ void analiseLexica(FILE *fp) {
     
     char ch;
     informacoes tokenContador;
+    informacoes tokenRetornado;
     int numeroDeTokens = 0;
     tokenContador.linha = 1;  // linhas são numeradas de 1 em diante.
     tokenContador.coluna = 1; // colunas são numeradas de 1 em diante.
@@ -60,7 +62,13 @@ void analiseLexica(FILE *fp) {
         if(isspace(ch)){
             analisaEspacos(ch, &tokenContador, &numeroDeTokens);
         } else{
-            analisaNaoEspacos(ch, &tokenContador, &numeroDeTokens);
+            informacoes tokenRetornado;
+            tokenRetornado = analisaNaoEspacos(ch, &tokenContador, &numeroDeTokens);
+            if(strcmp(tokenRetornado.token , "em processamento") != 0){
+                imprimeToken(tokenRetornado);
+            }
+
+
         }
         
     }
@@ -77,8 +85,18 @@ void analisaEspacos(char ch, informacoes *tokens, int *numeroDeTokens)
         tokens->coluna++;
     }
 }
-void analisaNaoEspacos(char ch, informacoes *tokens, int *numeroDeTokens)
+informacoes analisaNaoEspacos(char ch, informacoes *tokens, int *numeroDeTokens)
 {
     tokens->coluna++;
-    
+    informacoes tokenARetornar = { .token = "em processamento", 
+                                    .lexema = "",
+                                    .linha = tokens->linha,
+                                    .coluna = tokens->coluna
+                                    };
+    return tokenARetornar;
+}
+
+void imprimeToken(informacoes token){
+    printf("%s@%s@%d%d\n", token.token, token.lexema,
+                             token.linha, token.coluna);
 }
