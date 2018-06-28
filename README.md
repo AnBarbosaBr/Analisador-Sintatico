@@ -2,19 +2,19 @@
 
 |Token                   | Status |
 |---                     |  :---:      |
-|INTEIRO                 |  A Implementar      |
-|PONTO_FLUTUANTE         |  A Implementar      |
+|INTEIRO                 |  AUTOMATO OK      |
+|PONTO_FLUTUANTE         |  AUTOMATO OK      |
 |STRING                  |  A Implementar      |
-|BOOL                    |  A Implementar      |
-|IDENTIFICADOR           |  A Implementar      |
-|PALAVRA_RESERVADA       |  A Implementar      |
-|PONTO_VIRGULA           |  A Implementar      |
-|ABRE_PARENTESES         |  A Implementar      |
-|FECHA_PARENTESES        |  A Implementar      |
-|ABRE_CHAVES             |  A Implementar      |
-|FECHA_CHAVES            |  A Implementar      |
-|VIRGULA                 |  A Implementar      |
-|ATRIBUICAO              |  A Implementar      |
-|OPERADOR                |  A Implementar      |
-|OPERADOR_RELACIONAL     |   A Implementar     |
-
+|BOOL                    |  AUTOMATO OK      |
+|IDENTIFICADOR           |  AUTOMATO OK      |
+|PALAVRA_RESERVADA       |  AUTOMATO OK      |
+|PONTO_VIRGULA           |  AUTOMATO OK      |
+|ABRE_PARENTESES         |  AUTOMATO OK      |
+|FECHA_PARENTESES        |  AUTOMATO OK      |
+|ABRE_CHAVES             |  AUTOMATO OK      |
+|FECHA_CHAVES            |  AUTOMATO OK      |
+|VIRGULA                 |  AUTOMATO OK      |
+|ATRIBUICAO              |  AUTOMATO OK      |
+|OPERADOR                |  AUTOMATO OK      |
+|OPERADOR_RELACIONAL     |  AUTOMATO OK     |
+|INCREMENTO              |  AUTOMATO OK       |
