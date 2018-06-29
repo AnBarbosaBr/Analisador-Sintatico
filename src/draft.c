@@ -9,7 +9,7 @@
 #define ERRO_TOKEN "ocorreu um erro"
 
 #define IDENTIFICADOR "IDENTIFICADOR"
-#define NUMERO "NUMERO"
+#define NUMERO "NUMERO"         // DEVE SER TROCADO por INTEIRO e PONTO_FLUTUANTE
 
 #define PONTO_VIRGULA "PONTO_VIRGULA"
 #define VIRGULA "VIRGULA"
@@ -20,9 +20,18 @@
 #define ATRIBUICAO "ATRIBUICAO"
 #define OPERADOR "OPERADOR"
 
+#define INTEIRO "INTEIRO"
+#define PONTO_FLUTUANTE "PONTO_FLUTUANTE"
+#define STRING "STRING"               
+#define BOOL "BOOL"                   
+#define PALAVRA_RESERVADA "PALAVRA_RESERVADA"      
+#define OPERADOR_RELACIONAL "OPERADOR_RELACIONAL"
+#define INCREMENTO "INCREMENTO"
+
 typedef struct informacoes {
     char token[255]; // ajustar tamanho do char para corresponder ao maior token,
     char lexema[255];
+    int lexema_size;
     int linha;
     int coluna; 
     } informacoes;
@@ -32,7 +41,7 @@ void analiseLexica(FILE *fb);
 void consomeEspacos(char ch, struct informacoes *token, int *numeroDeTokens);
 informacoes analisaNaoEspacos(char ch, struct informacoes *token, int *numeroDeTokens);
 void imprimeToken(informacoes token);
-
+int tokenEquals(informacoes *tokens, char *tokenComparado);
 
 
 int main(int argc, char **argv){
@@ -55,7 +64,7 @@ int main(int argc, char **argv){
 }
 
 void analyse(char *arquivo) {
-    FILE *file_pointer = fopen(arquivo, "r");
+    FILE *file_pointer = fopen(arquivo, "rt");
 
     if(file_pointer == NULL){
         printf("Erro enquanto tentava ler o arquivo %s\n", arquivo);
@@ -78,13 +87,16 @@ void analiseLexica(FILE *fp) {
     while((ch = fgetc(fp)) != EOF)
     {
         // Se estamos processando algum token
-        if(strcmp(tokenContador.token , NOVO_TOKEN) != 0){
+        if(!tokenEquals(&tokenContador, NOVO_TOKEN)){
             if(isspace(ch)){ // Encontramos um espaço, 
                     //terminamos o processamento.
                     imprimeToken(tokenContador);
                     // voltamos a buscar outro token
                     setToken(&tokenContador, NOVO_TOKEN, "");
-            } 
+            } else
+            {
+                tokenRetornado = analisaNaoEspacos(ch, &tokenContador, &numeroDeTokens);
+            }
         }  
 
 
@@ -129,17 +141,36 @@ void setTokenValue(informacoes *token, char *novoValor)
     strcpy(token->token, novoValor);
 }
 
+int  append(char*s, size_t size, char c) {
+     if(strlen(s) + 1 >= size) {
+         printf ("Erro no tamanho do lexema.");
+          return 1;
+     }
+     int len = strlen(s);
+     s[len] = c;
+     s[len+1] = '\0';
+     return 0;
+}
+
 void appendToLexema(informacoes *token, char aAnexar)
 {
     // Criar uma maneira de "adicionar" o caractere ao lexema.
     // Essa não funciona direito.
-    printf("Anexando %c ao lexema %c\n", aAnexar, *token->lexema);
-    strcat(token->lexema, &aAnexar);
+   // printf("Appending to lekema: %c" , aAnexar);
+    size_t currentLexemaSize = token->lexema_size;
+    token->lexema_size++;
+    append(token->lexema, currentLexemaSize, aAnexar);
 }
+
+int tokenEquals(informacoes *tokenA, char *tokenComparado){
+    return (strcmp(tokenA->token, NOVO_TOKEN)==0);
+}
+
 informacoes analisaNaoEspacos(char ch, informacoes *tokens, int *numeroDeTokens)
 {
     assert(!isspace(ch));
-    if(strcmp(tokens->token, NOVO_TOKEN)==0){ //estado inicial
+    //printf("analizando: %c\n", ch);
+    if(tokenEquals(tokens, NOVO_TOKEN)){ //estado inicial
         if(isalnum(ch))
         {
             processaNewAlfaNumerico(ch, tokens);
@@ -151,13 +182,16 @@ informacoes analisaNaoEspacos(char ch, informacoes *tokens, int *numeroDeTokens)
     {
         if(isalnum(ch))
         {
-            processaNewAlfaNumerico(ch, tokens);
+            processaAlfaNumerico(ch, tokens);
         } else
         {
-            processaNewSimbolo(ch, tokens);
+            processaSimbolo(ch, tokens);
         } 
     }
-    printf("\n processamento %c  -  ", ch);
+
+
+    
+    //printf("\n processamento %c  -  ", ch);
     tokens->coluna++;
 
     return *tokens;
@@ -168,6 +202,7 @@ void setToken(informacoes *token, char *newToken, char *newLexema)
     strcpy(token->token , newToken);
     strcpy(token->lexema , newLexema);
 }
+
 void processaNewAlfaNumerico(char ch, informacoes *token)
 {
     if(isalpha(ch))
@@ -199,6 +234,29 @@ void processaNewSimbolo(char ch, informacoes *token)
     }
 }
 
+void processaAlfaNumerico(char ch, informacoes *token)
+{
+    if(isalpha(ch))
+    {
+        setTokenValue(token, IDENTIFICADOR);
+        appendToLexema(token, ch);
+    }
+    if(isdigit(ch)){
+        setTokenValue(token, NUMERO);
+        appendToLexema(token, ch);
+    }
+}
+
+
+void processaSimbolo(char ch, informacoes *token)
+{
+    switch (ch)
+    {
+        case '+': setTokenValue(token, INCREMENTO); break;
+        default: setTokenValue(token, ERRO_TOKEN); break;
+    }
+    appendToLexema(token, ch);
+}
 
 void imprimeToken(informacoes token){
     printf("%s @ %s @ %d @ %d\n", token.token, token.lexema,
