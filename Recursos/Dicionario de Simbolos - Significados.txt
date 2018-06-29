@@ -18,8 +18,7 @@ A = LETRA MAIUSCULA [A-Z]
 [ ] = Parentese ()
 
 
-
-& = Qualquer Caractere
+Q = Qualquer Caractere, exceto \  (do '\n') e ' (single quote)
 
 
 
