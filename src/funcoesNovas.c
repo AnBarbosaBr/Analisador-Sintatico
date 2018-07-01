@@ -8,6 +8,11 @@ void appendToLexema(informacoes *token, char aAnexar);
 void incrementaColuna(informacoes* info);
 
 
+#typedef ESTADO_FINAL 19;
+#typedef ESTADO_ERRO 20;
+
+
+
 // Funcao a ser implementada para mudar o estado.
 void mudaEstado(int novoEstado);
 
