@@ -8,6 +8,11 @@ void appendToLexema(informacoes *token, char aAnexar);
 void incrementaColuna(informacoes* info);
 
 
+// Funcao a ser implementada para mudar o estado.
+void mudaEstado(int novoEstado);
+
+
+
 
 
 
@@ -79,4 +84,10 @@ void quebrarLinha(informacoes* info)
 void incrementaColuna(informacoes* info)
 {
     info->coluna = info->coluna + 1;
+}
+
+
+void mudaEstado(int novoEstado)
+{
+    estadoAtual = novoEstado;
 }
