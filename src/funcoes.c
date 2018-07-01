@@ -10,6 +10,7 @@ typedef struct informacoes {
     int coluna; 
     } informacoes;
 
+    void imprimeToken(informacoes token);
 void setTokenValue(informacoes* info, char* newValue);
 void setLexemaValue(informacoes* info, char* newLexema);
 void setLinhaValue(informacoes* info, int newLineNumber);
@@ -71,7 +72,7 @@ int main(int argc, char **argv) {
     }
     else{
         //analiseLexica(file_pointer);
-        printf("Pronto para iniciar a análise lexica");
+        printf("Pronto para iniciar a análise lexica de %s", fileDir);
     }
     
     return 0;
@@ -360,6 +361,12 @@ void q18 (char ignorado,  informacoes tokens) {
 
 
 // Auxiliares
+
+void imprimeToken(informacoes token){
+    printf("%s @ %s @ %d @ %d\n", token.token, token.lexema,
+                             token.linha, token.coluna);
+}
+
 void setTokenValue(informacoes* info, char* newValue)
 {
     strcpy(info->token, newValue);
