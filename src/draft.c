@@ -43,7 +43,7 @@ informacoes analisaNaoEspacos(char ch, struct informacoes *token, int *numeroDeT
 void imprimeToken(informacoes token);
 int tokenEquals(informacoes *tokens, char *tokenComparado);
 
-
+/*
 int main(int argc, char **argv){
 
     printf(" Iniciando operacao \n");
@@ -62,7 +62,7 @@ int main(int argc, char **argv){
     printf("Encerrando com Sucesso.");
     return 0;
 }
-
+*/
 void analyse(char *arquivo) {
     FILE *file_pointer = fopen(arquivo, "rt");
 
@@ -142,6 +142,7 @@ void setTokenValue(informacoes *token, char *novoValor)
 }
 
 int  append(char*s, size_t size, char c) {
+     //printf("Adicionando '%s' - append\n", s);
      if(strlen(s) + 1 >= size) {
          printf ("Erro no tamanho do lexema.");
           return 1;
@@ -154,9 +155,7 @@ int  append(char*s, size_t size, char c) {
 
 void appendToLexema(informacoes *token, char aAnexar)
 {
-    // Criar uma maneira de "adicionar" o caractere ao lexema.
-    // Essa não funciona direito.
-   // printf("Appending to lekema: %c" , aAnexar);
+   //printf("Adicionando '%c' - appendToLexema\n", aAnexar);
     size_t currentLexemaSize = token->lexema_size;
     token->lexema_size++;
     append(token->lexema, currentLexemaSize, aAnexar);
