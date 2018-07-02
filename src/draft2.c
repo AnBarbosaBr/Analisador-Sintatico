@@ -27,7 +27,7 @@ void quebrarLinha(informacoes* info);
 void appendToLexema(informacoes *token, char aAnexar);
 void incrementarColunas(informacoes* info);
 void limpaLexema(informacoes* info);
-
+char getLastValueFromLexema(informacoes *token);
 
 int conta_vetor (char vet[] );
 void q0 (char ch, informacoes *token);
@@ -51,17 +51,29 @@ void q17 (char ch, informacoes *token); // Final IDENTIFICADOR
 void q18 (char ch, informacoes *token); // Final PONTO FLUTUANTE
 void q19 (char ch, informacoes *token); // Estado = Final, ou proximo é relacional.
 
+void q20ConsomeComentario(char ch, informacoes *token);
+
 void estadoErro (char ignorado, informacoes *token); // Esse estado imprime uma mensagem de erro
 void estadoFinal (char ignorado, informacoes *token); // Esse estado imprime o resultado obtido
+
+void q23_PrimeiraBarra(char ignorado, informacoes *token);
+
+
 void lancaErro(char errado, informacoes *token);
 
 #define ESTADO_INICIAL 9
-#define ESTADO_FINAL 20
-#define ESTADO_ERRO 21
+#define ESTADO_FINAL 21
+#define ESTADO_ERRO 22
 
 // Funcoes 
 typedef void (* funcaoEstado)(char ch, informacoes *token);
-funcaoEstado estados[] = { q0, q1, q2, q3, q4, q5, q6, q7, q8, q9, q10, q11, q12, q13, q14, q15, q16, q17, q18, q19, estadoFinal, estadoErro };
+funcaoEstado estados[] = { q0, q1, q2, q3, q4, 
+                            q5, q6, q7, q8, q9, q10,
+                            q11, q12, q13, q14, q15, 
+                            q16, q17, q18, q19, 
+                            q20ConsomeComentario, 
+                            estadoFinal, estadoErro,
+                            q23_PrimeiraBarra};
 int estadoAtual;
 void mudaEstado(int novoEstado);
 void processaEspacoEmEstadoFinal(char espaco, char *retornoDoEstado, informacoes* info);
@@ -71,12 +83,13 @@ void analiseLexica(FILE *fp);
 char buffer[1024];
 int bufferGravado = 0;
 int bufferLido = 0; 
-
+int linhaAtual = 1;
+int colunaAtual = 1;
 
 int main(int argc, char **argv) {
     
     estadoAtual = ESTADO_INICIAL;
-    printf(" Iniciando operacao \n");
+    printf("TOKEN@LEXEMA@LINHA@COLUNA\n");
     char *fileDir;
     if(argc > 1)    { // Foi informado um caminho.
         fileDir = argv[1];
@@ -194,11 +207,31 @@ void q3 (char analisado,  informacoes *token) {
 }
 
 void q4  (char analisado,  informacoes *token) {
-    printf("TODO: Implementar estado 4\n");
+    if(isdigit(analisado))
+    {
+        appendToLexema(token, analisado);
+        mudaEstado(13);
+    
+    } else {
+        // TODO: VERIFICAR SE ESTÀ CERTO PARA TODOS OS CASOS.
+
+        imprimeEVolta(2, "PONTO_FLUTUANTE", token);
+        
+    }
+
+    
 }
 
 void q5  (char analisado,  informacoes *token) {
-    printf("TODO: Implementar estado 5\n");
+    if(isdigit(analisado))
+    {
+        appendToLexema(token, analisado);
+        mudaEstado(18);
+        return;
+    }
+    imprimeEVolta(1, "ERRO", token);
+
+    
 }
 
 void q6  (char analisado,  informacoes *token) {
@@ -210,8 +243,12 @@ void q6  (char analisado,  informacoes *token) {
     if(isdigit(analisado))
     {
         appendToLexema(token, analisado);
-        mudaEstado(18);
+        mudaEstado(13);
+    } else if(analisado=='+'||analisado=='-')     {
+            appendToLexema(token, analisado);
+            mudaEstado(4);
     } else {
+        //TODO Verificar se serve em todos os casos.
         imprimeEVolta(1, "PONTO_FLUTUANTE", token);
     }
 }
@@ -221,7 +258,20 @@ void q7 (char analisado,  informacoes *token) {
 }
 
 void q8 (char analisado,  informacoes *token) {
-    printf("TODO: Implementar estado 8\n");
+    if(debugar) printf("Q8 caractere: %c num %d.\n ", analisado, (int)analisado);
+    if(isspace(analisado))
+    {
+        if(debugar) printf("Obtido espaco.\n");
+        imprimeEstado("OPERADOR", token);
+    }
+
+    if (analisado=='/') 
+    {
+        if(debugar) printf("Obtido Outra barra.\n");
+        mudaEstado(20);
+    }
+    
+    imprimeEVolta(1, "OPERADOR", token);
 }
 
 // Estado Inicial
@@ -243,7 +293,7 @@ void q9 (char analisado,  informacoes *token) {
             mudaEstado(14);
         }
     } else {
-
+        appendToLexema(token, analisado);
         switch (analisado) {
             case '#':
                 lancaErro(analisado, token);
@@ -267,16 +317,19 @@ void q9 (char analisado,  informacoes *token) {
             case ',': 
                 setTokenValue(token, "VIRGULA"); 
                 mudaEstado(10); break;
-            case '-': 
-                setTokenValue(token, "OPERADOR"); 
-                mudaEstado(10); break;
             case '*': 
+            case '%':
                 setTokenValue(token, "OPERADOR");
                 mudaEstado(10); break;
             case '/': 
                 setTokenValue(token, "OPERADOR");
-                mudaEstado(10); break;
-            case '+': 
+                mudaEstado(8); break;
+            case '!':
+                setTokenValue(token, "OPERADOR_RELACIONAL");
+                mudaEstado(12);
+                break;
+            case '+':
+            case '-': 
                 setTokenValue(token, "OPERADOR");
                 mudaEstado(16); break;
             case '=':
@@ -303,8 +356,7 @@ void q10 (char ignorado, informacoes *token) {
     if(isspace(ignorado))
     {
         estadoFinal(ignorado, token);
-    } else
-    {
+    } else {
         imprimeEVolta(1, token->token, token);
         return;
     }
@@ -312,37 +364,72 @@ void q10 (char ignorado, informacoes *token) {
 }
 
 
+
+
 void q11 (char analisado,  informacoes *token) {
-    // TODO: Implementar
+    if(isspace(analisado)) {
+        processaEspacoEmEstadoFinal(analisado, "OPERADOR_RELACIONAL", token);
+        return;
+    }
+    if(analisado=='=')
+    {
+        imprimeEstado("OPERADOR_RELACIONAL", token);
+        mudaEstado(ESTADO_INICIAL);
+    }
+    imprimeEVolta(1, "OPERADOR_RELACIONAL", token);
 }
 
 
 void q12 (char analisado,  informacoes *token) {
-    // TODO: Implementar
+     if(isspace(analisado))
+    {
+        lancaErro('!', token);
+    } else if(analisado=='=')
+    {
+        appendToLexema(token, analisado);
+        imprimeEstado("OPERADOR_RELACIONAL", token);
+        mudaEstado(ESTADO_INICIAL);
+    } else{
+        imprimeEVolta(1, "ERRO", token);
+    }
+
 }
 
 
 void q13 (char analisado,  informacoes *token) {
-    // TODO: Implementar
+    if(isspace(analisado))
+    {
+        processaEspacoEmEstadoFinal(analisado, "PONTO_FLUTUANTE", token);
+
+    } else if(isdigit(analisado))
+    {
+        appendToLexema(token, analisado);
+        mudaEstado(13);
+    } else {
+        imprimeEVolta(1, "PONTO_FLUTUANTE", token);
+    }
+    
 }
 
 
 void q14 (char analisado,  informacoes *token) {
     if(isspace(analisado))
     {
-        setTokenValue(token, "INTEIRO");
-        mudaEstado(9);
+        imprimeEstado("INTEIRO", token);
+        mudaEstado(ESTADO_INICIAL);
     } else if(isdigit(analisado)) {
         mudaEstado(14);
+        appendToLexema(token, analisado);
     } else if( analisado == '.') 
     {
         mudaEstado(15);
+        appendToLexema(token, analisado);
     } else {  
         imprimeEVolta(1, "INTEIRO", token);
         return;
     }
             
-    appendToLexema(token, analisado);
+    
 }
 
 
@@ -363,7 +450,23 @@ void q15 (char analisado,  informacoes *token) {
 
 
 void q16 (char analisado,  informacoes *token) {
-    // TODO: Implementar
+   if(isspace(analisado))
+   {
+       processaEspacoEmEstadoFinal(analisado,"OPERADOR", token);
+       return;
+   }
+    
+    char lastDigitInLexema = getLastValueFromLexema(token);
+    if( analisado==lastDigitInLexema )
+    {
+        appendToLexema(token, analisado);
+        imprimeEstado("INCREMENTO", token);
+        mudaEstado(ESTADO_INICIAL);
+    } else {
+        imprimeEVolta(1, "OPERADOR", token);
+    }
+    
+
 }
 
 
@@ -430,6 +533,15 @@ void q19 (char analisado,  informacoes *token) {
     }
 }
 // Auxiliares
+void q20ConsomeComentario (char analisado,  informacoes *token) {
+    printf("Dentro do estado 20");
+    if(analisado == '\n')
+    {
+        mudaEstado(ESTADO_INICIAL);
+    } else {
+        if(debugar) printf("Consumindo comentário %c", analisado);
+    }
+}
 
 void estadoFinal (char ignorado, informacoes *token)
 {
@@ -438,6 +550,16 @@ void estadoFinal (char ignorado, informacoes *token)
     mudaEstado(ESTADO_INICIAL);
       
 }
+
+
+
+
+void q23_PrimeiraBarra(char ignorado, informacoes *token){
+    printf("IMPLEMENTAR ESTADO 23");
+
+}
+
+
 
 void lancaErro(char errado, informacoes *token)
 {
@@ -532,7 +654,6 @@ void mudaEstado(int novoEstado)
     if(debugar) printf("Indo do estado %d para %d ... ", estadoAtual, novoEstado);
     estadoAtual = novoEstado;
     if(debugar) printf("Estou no estado %d\n", estadoAtual);
-    
 }
 
 void finalisaAnalise(char* tokenImpresso, informacoes* info)
@@ -567,11 +688,34 @@ void processaEspacoEmEstadoFinal(char espaco, char *retornoDoEstado, informacoes
 
 void imprimeEVolta(int retorno, char *retornoDoEstado, informacoes *info)
 {
-    
-        setTokenValue(info, retornoDoEstado);
+    if(retorno > 1)
+    {
+        // TODO: corrigir o token retornado, pois está
+        // incluindo letras erras.
+    }
+    setTokenValue(info, retornoDoEstado);
     imprimeToken(*info);
     bufferLido = bufferLido - retorno;
     if(debugar) printf("imprimeEVolta - proximo caractere a ler %c\n", buffer[bufferLido]);
     mudaEstado(ESTADO_INICIAL);
 }
     
+
+    char getLastValueFromLexema(informacoes *token)
+    {
+        if(debugar) printf("O lexema é %s", token->lexema);
+        char *lex = token->lexema;
+        size_t tamanho = strlen(lex);
+        int i = 0;
+        while(i<=tamanho)
+        {
+            if(lex[i]=='\0'){
+                break;
+            } else{
+                i++;
+            }
+        }
+        char retorno = lex[i-1];
+        if(debugar) printf ("O ultimo caractere é %c. ", retorno);
+        return retorno;
+    }
