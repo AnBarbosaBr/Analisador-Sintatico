@@ -115,7 +115,9 @@ void teste2(){
 
 void readlines(char *str){
   char *p, *temp;
-  p = strtok_r(str, "\n", &temp);
+  p = strtok_r(str, "\n", &temp); 
+  // Ignoramos a primeira linha.
+  p = strtok_r(NULL, "\n", &temp);
   do {
       AddTokenFromLinha(p);
   } while ((p = strtok_r(NULL, "\n", &temp)) != NULL);
@@ -147,7 +149,7 @@ int main(int argc, char **argv)
     while ((c = getchar()) != EOF)
         str[i++] = c;
 
-    printf("%s\n", str);
+    //printf("%s\n", str);
 
 	readlines(str);
     analyse(argc, argv);
@@ -667,7 +669,7 @@ char* transforma(char str[]){
 
 
 void AddTokenFromLinha(char *linha){
-    printf("Processando linha %s -> ", linha);
+ //   printf("Processando linha %s -> ", linha);
 	Token *tok = malloc(sizeof(Token));
 
     char original[255];
@@ -691,6 +693,6 @@ void AddTokenFromLinha(char *linha){
     tok->linha = numeroL;
     tok->coluna = numeroC;
 
-	printf("Adicionado token %s %s %d %d\n", nome, lex, numeroL, numeroC);
+//	printf("Adicionado token %s %s %d %d\n", nome, lex, numeroL, numeroC);
     listaDeTokens[lastToken++] = *tok;
 }
