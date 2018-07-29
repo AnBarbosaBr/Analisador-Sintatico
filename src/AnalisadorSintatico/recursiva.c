@@ -15,6 +15,8 @@ char* syntaxTree;
 typedef struct Token {
     char tokenName[255]; // ajustar tamanho do char para corresponder ao maior token,
     char lexema[255];
+    int linha;
+    int coluna;
 } Token;
 
 Token listaDeTokens[2024];
@@ -29,55 +31,88 @@ void eat(Token token, char* token_esperado);
 Token GetCurrentToken();
 void AdvanceToken();
 int ehFinal();
-void throwSyntaxError();
+void throwSyntaxError(Token erro);
 void AddStartToSyntaxTree(char* tokenName);
 void AddEndToSyntaxTree(char* tokenName);
 void AddLexemaToSyntaxTree(Token token);
 
-Token* AddToTokenList(char *tokenName, char *tokenLexema);
+Token* AddToTokenList(char *tokenName, char *tokenLexema, int linha, int coluna);
 int tokenEh(Token t, char* tokenName);
 
 void casoDeTesteSucesso(){
-    AddToTokenList("(", "(");
-    AddToTokenList("a", "1"); 
-    AddToTokenList("+", "+");
-    AddToTokenList("a", "2");
-    AddToTokenList(")", ")");
+    AddToTokenList("(", "(", 1, 0);
+    AddToTokenList("a", "1", 2, 0); 
+    AddToTokenList("+", "+", 3, 0);
+    AddToTokenList("a", "2", 4, 0);
+    AddToTokenList(")", ")", 5, 0);
 }
 
 void casoDeTeste_Falha1(){
-    //AddToTokenList("(", "(");
-    AddToTokenList("a", "1"); 
-    AddToTokenList("+", "+");
-    AddToTokenList("a", "2");
-    AddToTokenList(")", ")");
+    //AddToTokenList("(", "(", 1, 0);
+    AddToTokenList("a", "1", 2, 0); 
+    AddToTokenList("+", "+", 3, 0);
+    AddToTokenList("a", "2", 4, 0);
+    AddToTokenList(")", ")", 5, 0);
 }
 
 void casoDeTeste_Falha2(){
-    AddToTokenList("(", "(");
-    AddToTokenList("a", "1"); 
-    AddToTokenList("+", "+");
-    AddToTokenList("a", "2");
-    //AddToTokenList(")", ")");
+    AddToTokenList("(", "(", 1, 0);
+    AddToTokenList("a", "1", 2, 0); 
+    AddToTokenList("+", "+", 3, 0);
+    AddToTokenList("a", "2", 4, 0);
+    //AddToTokenList(")", ")", 5, 0);
 }
 
 void casoDeTeste_Falha3(){
-    AddToTokenList("(", "(");
-    AddToTokenList("a", "1"); 
-    AddToTokenList("+", "+");
-    //AddToTokenList("a", "2");
-    AddToTokenList(")", ")");
+    AddToTokenList("(", "(", 1, 0);
+    AddToTokenList("a", "1", 2, 0); 
+    AddToTokenList("+", "+", 3, 0);
+    //AddToTokenList("a", "2", 4, 0);
+    AddToTokenList(")", ")", 5, 0);
+}
+void casoDeTeste_Falha4(){
+    AddToTokenList("(", "(", 1, 0);
+    AddToTokenList("a", "1", 2, 0); 
+    //AddToTokenList("+", "+", 3, 0);
+    AddToTokenList("a", "2", 4, 0);
+    AddToTokenList(")", ")", 5, 0);
 }
 
+
+void casoDeTeste_Sucesso2(){
+    AddToTokenList("(", "(", 1, 0);
+    AddToTokenList("(", "(", 2, 0);
+    AddToTokenList("a", "5", 3, 0);
+    AddToTokenList("+", "+", 4, 0);
+    AddToTokenList("a", "1", 5, 0);
+    AddToTokenList(")", ")", 6, 0); 
+    AddToTokenList("+", "+", 7, 0);
+    AddToTokenList("a", "2", 8, 0);
+    AddToTokenList(")", ")", 9, 0);
+}
+
+void casoDeTeste_Falha5(){
+    AddToTokenList("(", "(", 1, 0);
+    AddToTokenList("(", "(", 2, 0);
+    AddToTokenList("a", "5", 3, 0);
+    AddToTokenList("+", "+", 4, 0);
+    AddToTokenList("a", "1", 5, 0);
+    AddToTokenList(")", ")", 6, 0); 
+    AddToTokenList("+", "+", 7, 0);
+    AddToTokenList("a", "2", 8, 0);
+    AddToTokenList(")", ")", 9, 0);
+    AddToTokenList(")", ")", 10, 0);
+}
 int main(int argc, char **argv) {
 
-    casoDeTeste_Falha2();
+    casoDeTeste_Falha5();
     // Sempre começa com S.
     AdvanceToken();
     compilaS();
     if(!ehFinal()){
-        throwSyntaxError();
+        throwSyntaxError(GetCurrentToken());;
     }
+    printf("\nAnalise Completa. Essa sequencia de tokens respeita a Gramatica.\n");
 
 
 }
@@ -108,7 +143,7 @@ void compilaF(){
     if(tokenEh(token, "a")) {
         eat(GetCurrentToken(), "a");
     } else {
-        throwSyntaxError();
+        throwSyntaxError(token);
     }
     AddEndToSyntaxTree("F");
 }
@@ -124,7 +159,7 @@ void eat(Token token, char* token_esperado)
     }
 
     else {
-        throwSyntaxError();
+        throwSyntaxError(token);
     }
 }
 
@@ -151,8 +186,8 @@ int ehFinal(){
 }
 
 
-void throwSyntaxError(){
-    fprintf(stderr, "%s\n", "Linguagem nao aceita.");
+void throwSyntaxError(Token erro){
+    fprintf(stderr, "Linguagem nao aceita. Erro no token %s na linha %d col %d\n", erro.lexema, erro.linha, erro.coluna);
     exit(EXIT_FAILURE);;
 }
 
@@ -171,10 +206,12 @@ void AddEndToSyntaxTree(char* tokenName){
 void AddLexemaToSyntaxTree(Token token){
     printf("%s\n", token.lexema);
 }
-Token* AddToTokenList(char *tokenName, char *tokenLexema){
+Token* AddToTokenList(char *tokenName, char *tokenLexema, int linha, int coluna){
     Token *tok = malloc(sizeof(Token));
     strcpy(tok->tokenName, tokenName);
     strcpy(tok->lexema, tokenLexema);
+    tok->linha = linha;
+    tok->coluna = coluna;
     listaDeTokens[lastToken++] = *tok;
     return tok;
 }
