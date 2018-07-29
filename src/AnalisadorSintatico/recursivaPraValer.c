@@ -80,38 +80,6 @@ void compilaDecArgumentos();
 void compilaBlocoFunc();
 void compilaConteudoDeFuncao();
 
-void teste1(){
-    printf("Iniciando teste.");
-    AddToTokenList("TIPO_INT", "int", 1, 1);
-    AddToTokenList("IDENTIFICADOR", "main", 1, 5);
-    AddToTokenList("ABRE_PARENTESES","(",1,9);
-    AddToTokenList("FECHA_PARENTESES",")",1,10);
-    AddToTokenList("ABRE_CHAVES","{",1,12);
-    AddToTokenList("PALAVRA_RESERVADA","return",2,5);
-    AddToTokenList("INTEIRO","0",2,12);
-    AddToTokenList("PONTO_VIRGULA",";",2,13);
-    AddToTokenList("FECHA_CHAVES","}",3,1);
-}
-
-void teste2(){
-    printf("Iniciando teste.");
-    AddToTokenList("TIPO_INT", "int", 1, 1);
-    AddToTokenList("IDENTIFICADOR", "main", 1, 5);
-    AddToTokenList("ABRE_PARENTESES","(",1,9);
-    AddToTokenList("TIPO_INT", "int", 99,99);
-    AddToTokenList("IDENTIFICADOR", "a", 99,99);
-
-    AddToTokenList("TIPO_INT", "int", 99,99);
-    AddToTokenList("IDENTIFICADOR", "a", 99,99);
-    AddToTokenList("FECHA_PARENTESES",")",1,10);
-    AddToTokenList("ABRE_CHAVES","{",1,12);
-    AddToTokenList("PALAVRA_RESERVADA","return",2,5);
-    AddToTokenList("INTEIRO","0",2,12);
-    AddToTokenList("PONTO_VIRGULA",";",2,13);
-    AddToTokenList("FECHA_CHAVES","}",3,1);
-
-	
-}
 
 void readlines(char *str){
   char *p, *temp;
@@ -121,11 +89,6 @@ void readlines(char *str){
   do {
       AddTokenFromLinha(p);
   } while ((p = strtok_r(NULL, "\n", &temp)) != NULL);
-}
-
-void testeLeitura(){
-    
-    
 }
 
 
@@ -141,8 +104,7 @@ int analyse(int argc, char **argv) {
 
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     char str[202400]; 
     int c;
     int i = 0; 
@@ -174,7 +136,6 @@ void compilaDecTipo(){
     eat(T_ID);
 }
 
-
 void compilaTipo(){
     AddStartToSyntaxTree(TIPO);
     Token token = GetCurrentToken();
@@ -198,7 +159,7 @@ void compilaDecArgumentos(){
         return;
     } else { 
         compilaDecTipo(); // declaro um tipo
-        while(!tokenEh(GetCurrentToken(), T_FECHA_PARENTESES))
+        while(!tokenEh(GetCurrentToken(), T_FECHA_PARENTESES)) 
         {
             eat(T_VIRGULA);
             compilaDecTipo();
@@ -209,7 +170,7 @@ void compilaDecArgumentos(){
 }
 
 void compilaBlocoFunc(){
-    printf("\nToken atual: %s", GetCurrentToken().tokenName);
+    //printf("\nToken atual: %s", GetCurrentToken().tokenName);
     AddStartToSyntaxTree(BLOCO_FUNCAO);
     eat(T_ABRE_CHAVES);
     compilaConteudoDeFuncao();
@@ -245,8 +206,7 @@ int aceitaTerminais(Token token, char *terminaisAceitos[], int numeroDeTerminais
     }
     return 1;
 }
-void eat(char* token_esperado)
-{
+void eat(char* token_esperado) {
     Token token = GetCurrentToken();
     if(tokenEh(token, token_esperado)) {
         AddStartToSyntaxTree(token.tokenName);
