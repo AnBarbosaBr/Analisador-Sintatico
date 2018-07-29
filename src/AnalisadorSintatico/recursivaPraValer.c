@@ -33,6 +33,22 @@ int currentToken = -1;
 #define T_ABRE_CHAVES "ABRE_CHAVES"
 #define T_FECHA_CHAVES "FECHA_CHAVES"
 #define CONTEUDO_BLOCO_FUNCAO "CONTEUDO_BLOCO_FUNCAO"
+#define PALAVRA_RESERVADA "PALAVRA_RESERVADA"
+#define T_WHILE "WHILE_STATEMENT"
+#define T_IF "IF_STATEMENT"
+#define T_ELSE "ELSE_STATEMENT"
+#define T_RETURN "RETURN_STATEMENT"
+#define T_INTEIRO "LITERAL_INTEIRO"
+#define T_PONTO_FLUTUANTE "LITERAL_DOUBLE"
+#define T_STRING "LITERAL_STRING"
+#define T_BOOL_LITERAL "BOOL_LITERAL"
+#define T_OP_INCREMENTO "INCREMENTO"
+#define T_OPERADOR_RELACIONAL "OPERADOR_RELACIONAL"
+#define T_OP_ARITMETICO "OPERADOR_ARITMETICO"
+#define T_OP_BOOLEANO "OPERADOR_BOOLEANO"
+#define T_ATRIBUICAO "ATRIBUICAO"
+#define T_VIRGULA "VIRGULA"
+#define T_PONTO_VIRGULA "PONTO_VIRGULA"
 
 
 char* transforma(char str[]);
@@ -42,7 +58,7 @@ void eat(char* token_esperado);
 Token GetCurrentToken();
 void AdvanceToken();
 int ehFinal();
-void throwSyntaxError(Token erro);
+void throwSyntaxError(Token erro, char* mensagem);
 void AddStartToSyntaxTree(char* tokenName);
 void AddEndToSyntaxTree(char* tokenName);
 void AddLexemaToSyntaxTree(Token token);
@@ -93,30 +109,52 @@ void teste2(){
     AddToTokenList("INTEIRO","0",2,12);
     AddToTokenList("PONTO_VIRGULA",";",2,13);
     AddToTokenList("FECHA_CHAVES","}",3,1);
+
+	
 }
 
-void adicionaLinhas(char* texto){
-
+void readlines(char *str){
+  char *p, *temp;
+  p = strtok_r(str, "\n", &temp);
+  do {
+      AddTokenFromLinha(p);
+  } while ((p = strtok_r(NULL, "\n", &temp)) != NULL);
 }
+
 void testeLeitura(){
     
-    AddTokenFromLinha("PALAVRA_RESERVADA@int@1@1");
+    
 }
 
 
-int main(int argc, char **argv) {
-    testeLeitura();
-    printf("Tokensa Adicionados. Indo para o primeiro termo.\n");
+int analyse(int argc, char **argv) {
     AdvanceToken();
-    printf("Começando a compilação.\n");
+    printf("Começando a analise.\n");
     compilaDeclararFuncao(); // Sempre começa com a declaração da função main.
     if(!ehFinal()){
-        throwSyntaxError(GetCurrentToken());;
+        throwSyntaxError(GetCurrentToken(), "Ainda há tokens a analisar.");
     }
     printf("\nAnalise Completa. Essa sequencia de tokens respeita a Gramatica.\n");
 
 
 }
+
+int main(int argc, char **argv)
+{
+    char str[202400]; 
+    int c;
+    int i = 0; 
+    while ((c = getchar()) != EOF)
+        str[i++] = c;
+
+    printf("%s\n", str);
+
+	readlines(str);
+    analyse(argc, argv);
+
+    return 0;
+}
+
 
 
 void compilaDeclararFuncao(){
@@ -145,7 +183,7 @@ void compilaTipo(){
 
     if(rejeitado==1) // Tokem não é um dos terminais.
     {
-        throwSyntaxError(token);
+        throwSyntaxError(token, "COMPILA_TIPO");
     }
     AddEndToSyntaxTree(TIPO);
 }
@@ -217,7 +255,7 @@ void eat(char* token_esperado)
 
     else {
         printf("ERRO: Token esperado: %s\n", token_esperado);
-        throwSyntaxError(token);
+        throwSyntaxError(token, "");
     }
 }
 
@@ -244,8 +282,13 @@ int ehFinal(){
 }
 
 
-void throwSyntaxError(Token erro){
-    fprintf(stderr, "Linguagem nao aceita. Erro no token %s na linha %d col %d\n", erro.lexema, erro.linha, erro.coluna);
+void throwSyntaxError(Token erro, char *mensagem){
+	fprintf(stderr, "%s\n", mensagem );
+    fprintf(stderr, "Linguagem nao aceita. Erro no token %s(%s) na linha %d col %d\n", 
+												erro.tokenName, 
+												erro.lexema, 
+												erro.linha, 
+												erro.coluna);
     exit(EXIT_FAILURE);;
 }
 
@@ -290,7 +333,8 @@ char* transforma(char str[]){
      if(!strcmp(token,"PALAVRA_RESERVADA")){
     	token = strtok(NULL, s);
     	if(!strcmp(token,"int")){
-    		strcat(resultado,"T_INT@");
+			strcat(resultado, T_INT);
+    		strcat(resultado,"@");
     		strcat(resultado,token);
     		strcat(resultado,"@");
     		token = strtok(NULL, s);
@@ -301,7 +345,8 @@ char* transforma(char str[]){
     		strcat(resultado,"@");
     		printf("%s\n", resultado );
     	}else if(!strcmp(token,"while")){
-    		strcat(resultado,"T_WHILE@");
+    		strcat(resultado,T_WHILE);
+			strcat(resultado,"@");
     		strcat(resultado,token);
     		strcat(resultado,"@");
     		token = strtok(NULL, s);
@@ -312,7 +357,8 @@ char* transforma(char str[]){
     		strcat(resultado,"@");
     		printf("%s\n", resultado );
     	}else if(!strcmp(token,"if")){
-    		strcat(resultado,"T_IF@");
+    		strcat(resultado,T_IF);
+			strcat(resultado,"@");
     		strcat(resultado,token);
     		strcat(resultado,"@");
     		token = strtok(NULL, s);
@@ -323,7 +369,8 @@ char* transforma(char str[]){
     		strcat(resultado,"@");
     		printf("%s\n", resultado );
     	}else if(!strcmp(token,"else")){
-    		strcat(resultado,"T_ELSE@");
+    		strcat(resultado,T_ELSE);
+			strcat(resultado,"@");
     		strcat(resultado,token);
     		strcat(resultado,"@");
     		token = strtok(NULL, s);
@@ -334,7 +381,8 @@ char* transforma(char str[]){
     		strcat(resultado,"@");
     		printf("%s\n", resultado );
     	}else if(!strcmp(token,"return")){
-    		strcat(resultado,"T_RETURN@");
+    		strcat(resultado,T_RETURN);
+			strcat(resultado,"@");
     		strcat(resultado,token);
     		strcat(resultado,"@");
     		token = strtok(NULL, s);
@@ -345,7 +393,8 @@ char* transforma(char str[]){
     		strcat(resultado,"@");
     		printf("%s\n", resultado );
     	}else if(!strcmp(token,"bool")){
-    		strcat(resultado,"T_BOLL@");
+    		strcat(resultado,T_BOOL);
+			strcat(resultado,"@");
     		strcat(resultado,token);
     		strcat(resultado,"@");
     		token = strtok(NULL, s);
@@ -356,7 +405,8 @@ char* transforma(char str[]){
     		strcat(resultado,"@");
     		printf("%s\n", resultado );
     	}else if(!strcmp(token,"double")){
-    		strcat(resultado,"T_DOUBLE@");
+    		strcat(resultado,T_DOUBLE);
+			strcat(resultado,"@");
     		strcat(resultado,token);
     		strcat(resultado,"@");
     		token = strtok(NULL, s);
@@ -367,7 +417,8 @@ char* transforma(char str[]){
     		strcat(resultado,"@");
     		printf("%s\n", resultado );
     	}else if(!strcmp(token,"void")){
-    		strcat(resultado,"T_VOID@");
+    		strcat(resultado,T_VOID);
+			strcat(resultado,"@");
     		strcat(resultado,token);
     		strcat(resultado,"@");
     		token = strtok(NULL, s);
@@ -380,7 +431,8 @@ char* transforma(char str[]){
     	}
      }else if(!strcmp(token,"INTEIRO")){
      	token = strtok(NULL, s);
-    		strcat(resultado,"T_INTEIRO@");
+    		strcat(resultado,T_INTEIRO);
+			strcat(resultado,"@");
     		strcat(resultado,token);
     		strcat(resultado,"@");
     		token = strtok(NULL, s);
@@ -393,7 +445,8 @@ char* transforma(char str[]){
     	
      }else if(!strcmp(token,"PONTO_FLUTUANTE")){
      	token = strtok(NULL, s);
-    		strcat(resultado,"T_PONTO_FLUTUANTE@");
+    		strcat(resultado,T_PONTO_FLUTUANTE);
+			strcat(resultado,"@");
     		strcat(resultado,token);
     		strcat(resultado,"@");
     		token = strtok(NULL, s);
@@ -406,7 +459,8 @@ char* transforma(char str[]){
     	
      }else if(!strcmp(token,"STRING")){
      	token = strtok(NULL, s);
-    		strcat(resultado,"T_STRING@");
+    		strcat(resultado,T_STRING);
+			strcat(resultado,"@");
     		strcat(resultado,token);
     		strcat(resultado,"@");
     		token = strtok(NULL, s);
@@ -419,7 +473,8 @@ char* transforma(char str[]){
     	
      }else if(!strcmp(token,"BOOL")){
      	token = strtok(NULL, s);
-    		strcat(resultado,"T_BOOL_LITERAL@");
+    		strcat(resultado,T_BOOL_LITERAL);
+			strcat(resultado,"@");
     		strcat(resultado,token);
     		strcat(resultado,"@");
     		token = strtok(NULL, s);
@@ -432,7 +487,8 @@ char* transforma(char str[]){
     	
      }else if(!strcmp(token,"IDENTIFICADOR")){
      	token = strtok(NULL, s);
-    		strcat(resultado,"T_ID@");
+    		strcat(resultado,T_ID);
+			strcat(resultado,"@");
     		strcat(resultado,token);
     		strcat(resultado,"@");
     		token = strtok(NULL, s);
@@ -445,7 +501,8 @@ char* transforma(char str[]){
     	
      }else if(!strcmp(token,"PONTO_VIRGULA")){
      	token = strtok(NULL, s);
-    		strcat(resultado,"T_PONTO_VIRGULA@");
+    		strcat(resultado,T_PONTO_VIRGULA);
+			strcat(resultado,"@");
     		strcat(resultado,token);
     		strcat(resultado,"@");
     		token = strtok(NULL, s);
@@ -458,7 +515,8 @@ char* transforma(char str[]){
     	
      }else if(!strcmp(token,"ABRE_PARENTESES")){
      	token = strtok(NULL, s);
-    		strcat(resultado,"T_ABRE_PARENTESES@");
+    		strcat(resultado,T_ABRE_PARENTESES);
+			strcat(resultado,"@");
     		strcat(resultado,token);
     		strcat(resultado,"@");
     		token = strtok(NULL, s);
@@ -471,7 +529,8 @@ char* transforma(char str[]){
     	
      }else if(!strcmp(token,"FECHA_PARENTESES")){
      	token = strtok(NULL, s);
-    		strcat(resultado,"T_FECHA_PARENTESES@");
+    		strcat(resultado,T_FECHA_PARENTESES);
+			strcat(resultado,"@");
     		strcat(resultado,token);
     		strcat(resultado,"@");
     		token = strtok(NULL, s);
@@ -484,7 +543,8 @@ char* transforma(char str[]){
     	
      }else if(!strcmp(token,"ABRE_CHAVES")){
      	token = strtok(NULL, s);
-    		strcat(resultado,"T_ABRE_CHAVES@");
+    		strcat(resultado,T_ABRE_CHAVES);
+			strcat(resultado,"@");
     		strcat(resultado,token);
     		strcat(resultado,"@");
     		token = strtok(NULL, s);
@@ -497,7 +557,8 @@ char* transforma(char str[]){
     	
      }else if(!strcmp(token,"FECHA_CHAVES")){
      	token = strtok(NULL, s);
-    		strcat(resultado,"T_FECHA_CHAVES@");
+    		strcat(resultado,T_FECHA_CHAVES);
+			strcat(resultado,"@");
     		strcat(resultado,token);
     		strcat(resultado,"@");
     		token = strtok(NULL, s);
@@ -510,7 +571,8 @@ char* transforma(char str[]){
     	
      }else if(!strcmp(token,"VIRGULA")){
      	token = strtok(NULL, s);
-    		strcat(resultado,"T_VIRGULA@");
+    		strcat(resultado,T_VIRGULA);
+			strcat(resultado,"@");
     		strcat(resultado,token);
     		strcat(resultado,"@");
     		token = strtok(NULL, s);
@@ -523,7 +585,8 @@ char* transforma(char str[]){
     	
      }else if(!strcmp(token,"ATRIBUICAO")){
      	token = strtok(NULL, s);
-    		strcat(resultado,"T_ATRIBUICAO@");
+    		strcat(resultado,T_ATRIBUICAO);
+			strcat(resultado,"@");
     		strcat(resultado,token);
     		strcat(resultado,"@");
     		token = strtok(NULL, s);
@@ -537,7 +600,8 @@ char* transforma(char str[]){
      }else if(!strcmp(token,"OPERADOR")){
 	     token = strtok(NULL, s);
 	    	if(!strcmp(token,"&&")||!strcmp(token,"||")){
-	    		strcat(resultado,"T_OP_BOOLEANO@");
+	    		strcat(resultado,T_OP_BOOLEANO);
+				strcat(resultado,"@");
 	    		strcat(resultado,token);
 	    		strcat(resultado,"@");
 	    		token = strtok(NULL, s);
@@ -548,7 +612,8 @@ char* transforma(char str[]){
 	    		strcat(resultado,"@");
 	    		printf("%s\n", resultado );
 	    	}else if(!strcmp(token,"+")||!strcmp(token,"-")||!strcmp(token,"*")||!strcmp(token,"/")||!strcmp(token,"%")){
-	    		strcat(resultado,"T_OP_ARITMETICO@");
+	    		strcat(resultado,T_OP_ARITMETICO);
+				strcat(resultado,"@");
 	    		strcat(resultado,token);
 	    		strcat(resultado,"@");
 	    		token = strtok(NULL, s);
@@ -561,7 +626,8 @@ char* transforma(char str[]){
 	    	}
      }else if(!strcmp(token,"OPERADOR_RELACIONAL")){
      	token = strtok(NULL, s);
-    		strcat(resultado,"T_OPERADOR_RELACIONAL@");
+    		strcat(resultado,T_OPERADOR_RELACIONAL);
+			strcat(resultado,"@");
     		strcat(resultado,token);
     		strcat(resultado,"@");
     		token = strtok(NULL, s);
@@ -574,7 +640,8 @@ char* transforma(char str[]){
     	
      }else if(!strcmp(token,"INCREMENTO")){
      	token = strtok(NULL, s);
-    		strcat(resultado,"T_OP_INCREMENTO@");
+    		strcat(resultado,T_OP_INCREMENTO);
+			strcat(resultado,"@");
     		strcat(resultado,token);
     		strcat(resultado,"@");
     		token = strtok(NULL, s);
@@ -589,35 +656,41 @@ char* transforma(char str[]){
       printf( " else\n");
 
      }
-     
-     char *resposta;
+     //printf("Transformação finalizada.\n");
+     char* resposta = (char *) malloc(255);
+	 //printf(" Retornando...");
      strcpy(resposta, resultado);
+	 //printf(" Resposta >> %s <<", resposta);
     return resposta;
 	
 }
 
 
 void AddTokenFromLinha(char *linha){
-    Token *tok = malloc(sizeof(Token));
+    printf("Processando linha %s -> ", linha);
+	Token *tok = malloc(sizeof(Token));
 
-    char line[255];
-    strcpy(line, linha);
+    char original[255];
+    strcpy(original, linha);
+	char line[255];
+	strcpy(line, transforma(original));
 
-    printf("Linha %s add: %p\nLine: %s add: %p\n", linha, linha, line, line);
+ //   printf("Linha %s add: %p\nLine: %s add: %p\n", linha, linha, line, line);
     char separador[2] = "@";
     char *nome = strtok(line, separador);
     char *lex = strtok(NULL, separador);
     char *clinha = strtok(NULL, separador);
     char *coluna = strtok(NULL, separador);
-    printf("\n%s - %s - %s - %s\n", nome, lex, clinha,coluna);
+ //   printf("\n%s - %s - %s - %s\n", nome, lex, clinha,coluna);
     int numeroL = atoi(clinha);
     int numeroC = atoi(coluna);
-    printf("\n%s - %s - %d - %d\n", nome, lex, numeroL,numeroC);
+ //   printf("\n%s - %s - %d - %d\n", nome, lex, numeroL,numeroC);
 
     strcpy(tok->tokenName, nome);
     strcpy(tok->lexema, lex);
     tok->linha = numeroL;
     tok->coluna = numeroC;
 
+	printf("Adicionado token %s %s %d %d\n", nome, lex, numeroL, numeroC);
     listaDeTokens[lastToken++] = *tok;
 }
