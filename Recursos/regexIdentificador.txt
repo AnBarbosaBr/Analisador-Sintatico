@@ -1,4 +1,0 @@
-IDENTIFICADOR: (a+A)(a+A+$+_)*
-
-
-STRING: "&"
